@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Household Energy AI</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      body {
+        min-height: 100vh;
+        background: #f5f7f6;
+        color: #1f2933;
+        padding: 40px 20px;
+      }
+
+      .container {
+        max-width: 1050px;
+        margin: auto;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .header h1 {
+        font-size: 34px;
+        color: #163b35;
+        margin-bottom: 8px;
+      }
+
+      .header p {
+        color: #6b7280;
+        font-size: 15px;
+      }
+
+      .main-card {
+        background: white;
+        border-radius: 18px;
+        padding: 30px;
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.07);
+      }
+
+      .section-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #163b35;
+        margin-bottom: 20px;
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 18px;
+      }
+
+      .input-group {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .input-group label {
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 7px;
+        color: #374151;
+      }
+
+      .input-group input {
+        width: 100%;
+        padding: 13px 14px;
+        border: 1px solid #d8dedb;
+        border-radius: 9px;
+        outline: none;
+        font-size: 14px;
+        background: #fafbfa;
+        transition: 0.2s;
+      }
+
+      .input-group input:focus {
+        border-color: #277c68;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(39, 124, 104, 0.08);
+      }
+
+      .button-row {
+        display: flex;
+        gap: 12px;
+        margin-top: 25px;
+      }
+
+      button {
+        border: none;
+        padding: 14px 25px;
+        border-radius: 9px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+
+      .predict-btn {
+        flex: 1;
+        background: #277c68;
+        color: white;
+      }
+
+      .predict-btn:hover {
+        background: #1f6655;
+      }
+
+      .reset-btn {
+        background: #eef2f0;
+        color: #374151;
+        padding-left: 25px;
+        padding-right: 25px;
+      }
+
+      .reset-btn:hover {
+        background: #e2e8e5;
+      }
+
+      .result {
+        display: none;
+        margin-top: 25px;
+        padding: 22px;
+        border-radius: 12px;
+        background: #edf8f4;
+        border: 1px solid #c9e8dc;
+        text-align: center;
+      }
+
+      .result.show {
+        display: block;
+      }
+
+      .result-title {
+        font-size: 14px;
+        color: #527067;
+        margin-bottom: 8px;
+      }
+
+      .result-value {
+        font-size: 32px;
+        font-weight: 800;
+        color: #1f6655;
+      }
+
+      .result-unit {
+        font-size: 14px;
+        color: #527067;
+        margin-left: 5px;
+      }
+
+      .error {
+        display: none;
+        margin-top: 20px;
+        padding: 14px;
+        border-radius: 9px;
+        background: #fff1f1;
+        border: 1px solid #f2caca;
+        color: #b42318;
+        font-size: 14px;
+      }
+
+      .error.show {
+        display: block;
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        margin-top: 20px;
+        color: #527067;
+        font-size: 14px;
+      }
+
+      .loading.show {
+        display: block;
+      }
+
+      .footer {
+        text-align: center;
+        margin-top: 22px;
+        color: #8a9490;
+        font-size: 12px;
+      }
+
+      @media (max-width: 700px) {
+        body {
+          padding: 25px 15px;
+        }
+
+        .main-card {
+          padding: 22px;
+        }
+
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .header h1 {
+          font-size: 28px;
+        }
+
+        .button-row {
+          flex-direction: column;
+        }
+
+        .reset-btn {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Household Energy AI</h1>
+        <p>ANN-powered Global Active Power Prediction</p>
+      </div>
+      <div class="main-card">
+        <div class="section-title">Enter Energy Data</div>
+        <form id="predictionForm">
+          <div class="form-grid">
+            <div class="input-group">
+              <label>Global Reactive Power</label>
+              <input
+                type="number"
+                step="any"
+                id="global_reactive_power"
+                placeholder="e.g. 0.2"
+                required
+              />
+            </div>
+            <div class="input-group">
+              <label>Voltage</label>
+              <input
+                type="number"
+                step="any"
+                id="voltage"
+                placeholder="e.g. 240"
+                required
+              />
+            </div>
+            <div class="input-group">
+              <label>Sub Metering 1</label>
+              <input
+                type="number"
+                step="any"
+                id="sub_metering_1"
+                placeholder="e.g. 1"
+                required
+              />
+            </div>
+            <div class="input-group">
+              <label>Sub Metering 2</label>
+              <input
+                type="number"
+                step="any"
+                id="sub_metering_2"
+                placeholder="e.g. 2"
+                required
+              />
+            </div>
+            <div class="input-group">
+              <label>Sub Metering 3</label>
+              <input
+                type="number"
+                step="any"
+                id="sub_metering_3"
+                placeholder="e.g. 5"
+                required
+              />
+            </div>
+            <div class="input-group">
+              <label>Day</label>
+              <input
+                type="number"
+                id="day"
+                min="1"
+                max="31"
+                placeholder="e.g. 15"
+                required
+              />
+            </div>
+            <div class="input-group">
+              <label>Month</label>
+              <input
+                type="number"
+                id="month"
+                min="1"
+                max="12"
+                placeholder="e.g. 6"
+                required
+              />
+            </div>
+            <div class="input-group">
+              <label>Year</label>
+              <input type="number" id="year" placeholder="e.g. 2007" required />
+            </div>
+            <div class="input-group">
+              <label>Hour</label>
+              <input
+                type="number"
+                id="hour"
+                min="0"
+                max="23"
+                placeholder="e.g. 18"
+                required
+              />
+            </div>
+            <div class="input-group">
+              <label>Minute</label>
+              <input
+                type="number"
+                id="minute"
+                min="0"
+                max="59"
+                placeholder="e.g. 30"
+                required
+              />
+            </div>
+          </div>
+          <div class="button-row">
+            <button type="submit" class="predict-btn">Predict Energy</button>
+            <button type="button" class="reset-btn" id="resetBtn">Reset</button>
+          </div>
+        </form>
+        <div class="loading" id="loading">Predicting with ANN model...</div>
+        <div class="error" id="error"></div>
+        <div class="result" id="result">
+          <div class="result-title">Predicted Global Active Power</div>
+          <span class="result-value" id="predictionValue"> 0.0000 </span>
+          <span class="result-unit"> kW </span>
+        </div>
+      </div>
+      <div class="footer">Household Energy ANN • FastAPI + TensorFlow</div>
+    </div>
+    <script>
+      const API_URL = "http://127.0.0.1:8000/predict";
+      const form = document.getElementById("predictionForm");
+      const result = document.getElementById("result");
+      const error = document.getElementById("error");
+      const loading = document.getElementById("loading");
+      const predictionValue = document.getElementById("predictionValue");
+      const resetBtn = document.getElementById("resetBtn");
+      form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        result.classList.remove("show");
+        error.classList.remove("show");
+        loading.classList.add("show");
+        const data = {
+          global_reactive_power: Number(
+            document.getElementById("global_reactive_power").value,
+          ),
+          voltage: Number(document.getElementById("voltage").value),
+          sub_metering_1: Number(
+            document.getElementById("sub_metering_1").value,
+          ),
+          sub_metering_2: Number(
+            document.getElementById("sub_metering_2").value,
+          ),
+          sub_metering_3: Number(
+            document.getElementById("sub_metering_3").value,
+          ),
+          day: Number(document.getElementById("day").value),
+          month: Number(document.getElementById("month").value),
+          year: Number(document.getElementById("year").value),
+          hour: Number(document.getElementById("hour").value),
+          minute: Number(document.getElementById("minute").value),
+        };
+        try {
+          const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(data),
+          });
+          const responseData = await response.json();
+          if (!response.ok) {
+            throw new Error(
+              responseData.detail
+                ? JSON.stringify(responseData.detail)
+                : "Prediction failed",
+            );
+          }
+          const prediction = Number(responseData.predicted_global_active_power);
+          predictionValue.textContent = prediction.toFixed(4);
+          result.classList.add("show");
+        } catch (err) {
+          error.textContent = "Error: " + err.message;
+          error.classList.add("show");
+        } finally {
+          loading.classList.remove("show");
+        }
+      });
+      resetBtn.addEventListener("click", function () {
+        form.reset();
+        result.classList.remove("show");
+        error.classList.remove("show");
+        loading.classList.remove("show");
+      });
+    </script>
+  </body>
+</html>
