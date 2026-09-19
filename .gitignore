@@ -220,3 +220,5 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 household_power_consumption.txt
+Data/household_power_consumption.txt
+Data/
